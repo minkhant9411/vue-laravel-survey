@@ -45,6 +45,7 @@
                     <span class="absolute -inset-1.5" />
                     <span class="sr-only">Open user menu</span>
                     <img class="h-8 w-8 rounded-full" :src="user.imageUrl" alt="" />
+
                   </MenuButton>
                 </div>
                 <transition enter-active-class="transition ease-out duration-100"
@@ -90,6 +91,7 @@
           <div class="flex items-center px-5">
             <div class="flex-shrink-0">
               <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
+
             </div>
             <div class="ml-3">
               <div class="text-base font-medium leading-none text-white">
@@ -130,22 +132,24 @@ import {
   MenuItems,
 } from "@headlessui/vue";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { computed } from "vue";
-import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 const navigation = [
   { name: "Dashboard", to: { name: "Dashboard" } },
   { name: "Servey", to: { name: "Surveys" } },
 ];
 
+const router = useRouter();
 const store = useStore();
+function logout() {
+  store.dispatch("logout")
+    .then(() => {
+      router.push({ name: "Login" });
+    });
+
+}
 const user = computed(() => {
   return store.state.user.data;
 });
-const router = useRouter();
-function logout() {
-  store.commit("logout");
-  router.push({ name: "Login" });
-
-}
 </script>
