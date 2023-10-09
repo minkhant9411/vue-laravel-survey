@@ -3,11 +3,17 @@
       <template v-slot:header>
          <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold font-gray-900">
-               {{ model.id ? model.title : "Create a Survey" }}
+               {{ route.params.id ? model.title : "Create a Survey" }}
             </h1>
+            <button v-if="route.params.id" type="button" @click='deleteSurvey'
+               class="py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-md">Delete
+               Survey</button>
          </div>
       </template>
-      <form @submit.prevent="saveSurvey">
+      <div v-if="surveyLoading" class="flex justify-center">
+         loading.....
+      </div>
+      <form v-else @submit.prevent="saveSurvey">
          <div class="shadow sm:rounded-md sm:overflow-hidden">
             <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
                <!-- Image -->
@@ -16,7 +22,8 @@
                      Image
                   </label>
                   <div class="mt-1 flex items-center">
-                     <img :src="model.image" v-if="model.image" :alt="model.title" class="w-64 h-48 object-cover" />
+                     <img :src="model.image_url" v-if="model.image_url" :alt="model.title"
+                        class="w-64 h-48 object-cover" />
                      <span v-else
                         class="flex items-center justify-center h-12 w-12 rounded-full overflow-hidden bg-gray-100">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -81,7 +88,7 @@
                   Questions
 
                   <!-- Add new question -->
-                  <button type="button" @click="addQuestion()"
+                  <button type="button" @click="addQuestion"
                      class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
@@ -112,7 +119,7 @@
 <script setup>
 //import
 import { v4 as uuidv4 } from "uuid";
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import PageComponent from "../components/PageComponent.vue";
 import QuestionEditor from "../components/editor/QuestionEditor.vue";
 
@@ -128,14 +135,23 @@ let model = ref({
    status: false,
    description: null,
    image: null,
+   image_url: null,
    expire_date: null,
    questions: [],
 });
+
+watch(() => store.state.currentSurvey.data,
+   (newVal, oldVal) => {
+      model.value = {
+         ...JSON.parse(JSON.stringify(newVal)),
+         status: newVal.status !== 'draft'
+      };
+   }
+)
 if (route.params.id) {
-   model.value = store.state.surveys.find((s) => {
-      return s.id === parseInt(route.params.id);
-   });
-   console.log(model.value);
+   store.dispatch('getSurvey', route.params.id).then((res) => {
+      model.value = res.data
+   })
 }
 //props
 
@@ -167,13 +183,35 @@ const questionChange = (question) => {
 
 }
 const saveSurvey = () => {
-   store.dispatch("saveSurvey", model.value).then((data) => {
+   store.dispatch("saveSurvey", model.value).then(({ data }) => {
       router.push({
          name: "SurveyView",
-         params: { id: data.data.id },
+         params: { id: data.id },
       })
    });
 }
+
+const onImageChoose = (e) => {
+   const file = e.target.files[0];
+   const reader = new FileReader();
+   reader.onload = () => {
+      model.value.image = reader.result
+      model.value.image_url = reader.result
+   }
+   reader.readAsDataURL(file);
+
+}
+
+
+const deleteSurvey = () => {
+   if (confirm('Are you sure to delete this survey?')) {
+      store.dispatch('deleteSurvey', route.params.id).then(() => {
+         router.push({ name: 'Surveys' })
+      })
+   }
+}
 //computed
+
+const surveyLoading = computed(() => store.state.currentSurvey.loading)
 </script>
 <style scoped></style>
