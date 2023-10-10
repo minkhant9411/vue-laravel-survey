@@ -118,6 +118,7 @@
     </Disclosure>
 
     <router-view></router-view>
+    <Notifaction></Notifaction>
   </div>
 </template>
 
@@ -135,6 +136,7 @@ import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { useStore } from "vuex";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import Notifaction from './Notifaction.vue';
 const navigation = [
   { name: "Dashboard", to: { name: "Dashboard" } },
   { name: "Servey", to: { name: "Surveys" } },

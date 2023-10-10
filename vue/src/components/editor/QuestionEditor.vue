@@ -4,10 +4,9 @@
     <h3 class="text-lg font-bold">
       {{ index + 1 }}. {{ questionData.question }}
     </h3>
-
     <div class="flex items-center">
       <!-- Add new question -->
-      <button type="button" @click="addQuestion()"
+      <button type="button" @click="addQuestion"
         class="flex items-center text-xs py-1 px-3 mr-2 rounded-sm text-white bg-gray-600 hover:bg-gray-700">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd"
@@ -19,7 +18,7 @@
       <!--/ Add new question -->
 
       <!-- Delete question -->
-      <button type="button" @click="deleteQuestion()"
+      <button type="button" @click="deleteQuestion"
         class="flex items-center text-xs py-1 px-3 rounded-sm border border-transparent text-red-500 hover:border-red-600">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd"
@@ -85,7 +84,7 @@
         <!--/ Add new option -->
       </h4>
 
-      <div v-if="!questionData.data.options.length" class="text-xs text-gray-600 text-center py-3">
+      <div v-if="!questionData.data.options" class="text-xs text-gray-600 text-center py-3">
         You don't have any options defined
       </div>
       <!-- Option list -->
@@ -135,6 +134,7 @@ function upperCaseFirst(str) {
 }
 
 function getOptions() {
+
   return questionData.value.data.options;
 }
 
@@ -172,7 +172,6 @@ function dataChange() {
   if (!shouldHaveOptions()) {
     delete data.data.options;
   }
-
   emit("change", data);
 }
 

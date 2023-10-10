@@ -13,7 +13,7 @@
       <div v-if="surveyLoading" class="flex justify-center">
          loading.....
       </div>
-      <form v-else @submit.prevent="saveSurvey">
+      <form v-else @submit.prevent="saveSurvey" class="opacity-0 animate-fade-in-down">
          <div class="shadow sm:rounded-md sm:overflow-hidden">
             <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
                <!-- Image -->
@@ -174,8 +174,12 @@ const deleteQuestion = (question) => {
    })
 }
 const questionChange = (question) => {
+
+   if (question.data.options) {
+      question.data.options = [...question.data.options];
+   }
    model.value.questions = model.value.questions.map((q) => {
-      if (q.id !== question.id) {
+      if (q.id === question.id) {
          return JSON.parse(JSON.stringify(question))
       }
       return q;
@@ -184,6 +188,7 @@ const questionChange = (question) => {
 }
 const saveSurvey = () => {
    store.dispatch("saveSurvey", model.value).then(({ data }) => {
+      store.commit('notify', { type: 'success', message: 'Successful!' });
       router.push({
          name: "SurveyView",
          params: { id: data.id },
