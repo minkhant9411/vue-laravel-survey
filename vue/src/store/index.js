@@ -7,6 +7,10 @@ const store = createStore({
       data: {},
       token: sessionStorage.getItem("TOKEN"),
     },
+    dashboard: {
+      data: {},
+      loading: false,
+    },
     currentSurvey: {
       loading: false,
       data: {},
@@ -25,9 +29,23 @@ const store = createStore({
   },
   getters: {},
   actions: {
-    getSurveys({ commit }) {
+    getDashboardData({ commit }) {
+      commit("dashboardLoading", true);
+      return axiosClient
+        .get("/dashboard")
+        .then((res) => {
+          commit("dashboardLoading", false);
+          commit("setDashboardData", res.data);
+        })
+        .catch((err) => {
+          commit("dashboardLoading", false);
+          return err;
+        });
+    },
+    getSurveys({ commit }, { url = null } = {}) {
+      url = url || "/survey";
       commit("setSurveysLoading", true);
-      return axiosClient.get("/survey").then((res) => {
+      return axiosClient.get(url).then((res) => {
         commit("setSurveysLoading", false);
         commit("setSurveys", res.data);
       });
@@ -49,12 +67,24 @@ const store = createStore({
           throw err;
         });
     },
+    getSurveyBySlug({ commit }, slug) {
+      commit("setCurrentSurveyLoading", true);
+      return axiosClient
+        .get(`survey-by-slug/${slug}`)
+        .then((res) => {
+          commit("setCurrentSurvey", res.data);
+          commit("setCurrentSurveyLoading", false);
+        })
+        .catch((err) => {
+          commit("setCurrentSurveyLoading", true);
+          throw err;
+        });
+    },
     saveSurvey({ commit }, survey) {
       delete survey.image_url;
       let response;
-      console.log(survey.id);
       if (survey.id) {
-        console.log("id");
+        survey.status ? 1 : 0;
         response = axiosClient
           .put(`/survey/${survey.id}`, survey)
           .then((res) => {
@@ -62,13 +92,15 @@ const store = createStore({
             return res.data;
           });
       } else {
-        console.log("no id");
         response = axiosClient.post("/survey", survey).then((res) => {
           commit("setCurrentSurvey", res.data);
           return res.data;
         });
       }
       return response;
+    },
+    saveSurveyAnswer({ commit }, { survey_id, answers }) {
+      return axiosClient.post(`/survey/${survey_id}/answer`, { answers });
     },
     register({ commit }, user) {
       return axiosClient.post("/register", user).then(({ data }) => {
@@ -90,6 +122,9 @@ const store = createStore({
     },
   },
   mutations: {
+    dashboardLoading(state, loading) {
+      state.dashboard.loading = loading;
+    },
     setSurveysLoading(state, loading) {
       state.surveys.loading = loading;
     },
@@ -99,8 +134,11 @@ const store = createStore({
     setCurrentSurvey(state, survey) {
       state.currentSurvey.data = survey.data;
     },
+    setDashboardData(state, data) {
+      state.dashboard.data = data;
+    },
     setSurveys(state, survey) {
-      state.surveys.links = survey.links;
+      state.surveys.links = survey.meta.links;
       state.surveys.data = survey.data;
     },
     logout: (state) => {

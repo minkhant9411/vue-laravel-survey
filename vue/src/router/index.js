@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "../components/DefaultLayout.vue";
+import SurveyPublicView from "../components/SurveyPublicView.vue";
 import AuthLayout from "../components/AuthLayout.vue";
 import Dashboard from "../views/Dashboard.vue";
 import SurveyView from "../views/SurveyView.vue";
@@ -22,6 +23,11 @@ const router = createRouter({
         { path: "/survey/create", name: "SurveyCreate", component: SurveyView },
         { path: "/survey/:id", name: "SurveyView", component: SurveyView },
       ],
+    },
+    {
+      path: "/view/survey/:slug",
+      name: "SurveyPublicView",
+      component: SurveyPublicView,
     },
     {
       path: "/auth",
